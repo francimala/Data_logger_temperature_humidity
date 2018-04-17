@@ -7,8 +7,10 @@
 #include "DHT.h"
 
 #define DHTPIN 7
+#define DHTTYPE DHT11
 
 SdFat SD;
+DHT dht(DHTPIN, DHTTYPE);
 
 LiquidCrystal lcd(9,8,5,4,3,2); //The lcd is connected to pins 9, 8, 5, 4, 3, 2. We are creating an object called lcd of the class LiquidCrystal.
 RTC_DS3231 RTC; //We are creating an object named RTC of the class RTC_DS3231
@@ -16,6 +18,7 @@ RTC_DS3231 RTC; //We are creating an object named RTC of the class RTC_DS3231
 byte first_run = 1;
 float theta_sum[2] = {0,0};
 float theta_first[2] = {0,0};
+float phi_sum = 0;
 unsigned int first_step; //MINUTES.
 unsigned int counter = 1;
 const byte chipSelect = 10;
@@ -49,6 +52,7 @@ void setup()
   Wire.begin();
   RTC.begin();
   File myFile; //We are creating an object called myFile of the class File.
+  dht.begin();
 
   //RTC's section
   if (!RTC.begin())
@@ -114,6 +118,8 @@ void loop()
   int exit_flag = 0;
   float stop_time = 0.5; //SECONDS. We have to wait 0.5 seconds between 2 time update, in this way we can register measurements correctly.
   float integration_time2;
+  float phi = 0;
+  float D7;
   int A0, A1;
   float theta[2] = {0,0};//Every loop we need to empty theta.
   unsigned int sensor0 = 0; //LM35 connected pin A0
@@ -128,6 +134,7 @@ void loop()
    * Per farlo è necessario definire i minuti che mancano alla prossima scrittura, così da poter definire il formato ora next che rappresenta
    * il momento della prossima scrittura (preciso al secondo, ovvero allo scoccare del minuto).
    */
+  
   now = RTC.now();
   first_step = time_step - now.minute()%time_step;
   next = now + TimeSpan(0, 0, first_step, -now.second());
@@ -159,6 +166,9 @@ void loop()
       theta_first[1] += A1;
     }
     theta_first[1] = theta_first[1]/9.31/20;
+
+    D7 = dht.readHumidity();
+    Serial.println(D7);
 
     lcd.setCursor(4, 0);
     lcd.print(theta_first[0], 2);
@@ -210,6 +220,8 @@ void loop()
         myFile.print(" ; ");
         myFile.print(theta_sum[1]/(counter-1));
         myFile.print(" ; ");
+        myFile.print(phi_sum/(counter-1));
+        myFile.print(" ; ");
         myFile.println(counter);
         myFile.close();
 
@@ -218,6 +230,7 @@ void loop()
 
         theta_sum[0] = 0;
         theta_sum[1] = 0;
+        phi_sum = 0;
         counter = 1;
         exit_flag = 0;
         now = RTC.now();
@@ -276,6 +289,14 @@ void loop()
     theta[1] = theta[1]/9.31/20;
     theta_sum[1] += theta[1];
 
+    for (k = 0; k < 20; k++)
+    {
+      D7 = dht.readHumidity();
+      phi += D7;
+    }
+    phi = phi/20;
+    phi_sum += phi;
+
     Serial.print("   * ");
     Serial.print(theta[0]);
     Serial.print("  ;  ");
@@ -286,6 +307,10 @@ void loop()
     Serial.print("  ;  ");
     Serial.print(theta_sum[1]/counter);
     //Serial.println(" Current/Average (deg Celsius, sensor 1)");
+    Serial.print("   * ");
+    Serial.print(phi);
+    Serial.print("  ;  ");
+    Serial.println(phi_sum/counter);
 
     lcd.setCursor(4, 0);
     lcd.print(theta_sum[0]/counter, 2);

@@ -4,6 +4,9 @@
 #include "SdFat.h" //New SD library.
 #include <LiquidCrystal.h> //LCD library
 #include "RTClib.h" //RTC library
+#include "DHT.h"
+
+#define DHTPIN 7
 
 SdFat SD;
 
@@ -43,7 +46,6 @@ void setup()
   analogReference(INTERNAL);
   Serial.begin(9600); //We are opening the serial communication.
   delay(1000);
-  Serial.println("Serial communication started.");
   Wire.begin();
   RTC.begin();
   File myFile; //We are creating an object called myFile of the class File.
@@ -57,7 +59,6 @@ void setup()
 
   if (RTC.lostPower())
   {
-    Serial.println("RTC lost power, let's set the right time!");
     RTC.adjust(DateTime(F(__DATE__), F(__TIME__)));
   }
 
@@ -85,12 +86,9 @@ void setup()
   }
   else
   {
-    Serial.println("SD card initialized.");
-
     //File initialization
     if (!SD.exists("log1.txt")) //if it doesn't exist create it.
     {
-      Serial.println("File didn't exist. We are creating it.");
       myFile = SD.open("log1.txt", FILE_WRITE);
       
       if (myFile)
@@ -98,11 +96,11 @@ void setup()
         Serial.println("I'm writing to log1.txt.");
         myFile.close();
       }
-
-      else
+      /*else
       {
         Serial.println("I'm sorry but I couldn't create the file.");
       }
+      */
     }
   }
 
@@ -178,8 +176,8 @@ void loop()
       //Serial.println("Problem!!!!");
       delay(1000);
       now = RTC.now(); //A second is gone, so we need to update time!
-      printdate(now);
-      printdate(next);
+      //printdate(now);
+      //printdate(next);
     }
   }
 
@@ -215,8 +213,8 @@ void loop()
         myFile.println(counter);
         myFile.close();
 
-        printdate(now);
-        printdate(next);
+        //printdate(now);
+        //printdate(next);
 
         theta_sum[0] = 0;
         theta_sum[1] = 0;
@@ -227,21 +225,22 @@ void loop()
         delay (1000);
       }
 
-      else
+      /*else
       {
         Serial.println("Error opening file.");
         Serial.println(myFile);
       }
+      */
     }
     
     else
     {
       j += 1;
       now = RTC.now();
-      printdate(now);
-      printdate(next);
-      Serial.println(counter);
-      Serial.println(j);
+      //printdate(now);
+      //printdate(next);
+      //Serial.println(counter);
+      //Serial.println(j);
 
       delay(stop_time*1000);
 
@@ -281,12 +280,12 @@ void loop()
     Serial.print(theta[0]);
     Serial.print("  ;  ");
     Serial.print(theta_sum[0]/counter);
-    Serial.println(" Current/Average (deg Celsius, sensor 0)");
+    //Serial.println(" Current/Average (deg Celsius, sensor 0)");
     Serial.print("   * ");
     Serial.print(theta[1]);
     Serial.print("  ;  ");
     Serial.print(theta_sum[1]/counter);
-    Serial.println(" Current/Average (deg Celsius, sensor 1)");
+    //Serial.println(" Current/Average (deg Celsius, sensor 1)");
 
     lcd.setCursor(4, 0);
     lcd.print(theta_sum[0]/counter, 2);

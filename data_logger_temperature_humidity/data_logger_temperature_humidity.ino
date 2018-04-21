@@ -17,6 +17,7 @@ RTC_DS3231 RTC; //We are creating an object named RTC of the class RTC_DS3231
 
 byte first_run = 1;
 float theta_sum[2] = {0,0};
+float theta_avg = 0;
 float theta_first[2] = {0,0};
 float phi_sum = 0;
 unsigned int first_step; //MINUTES.
@@ -75,13 +76,13 @@ void setup()
   lcd.begin(16, 2); //row and cols number.
   lcd.clear();
   lcd.setCursor(0, 0); //We are setting cursor in the right place.
-  lcd.print("T1: ");
+  lcd.print("T: ");
   lcd.setCursor(10, 0);
   lcd.print("\337C"); //\337C is used to write °C. 
   lcd.setCursor(0, 1);
-  lcd.print("T2: ");
+  lcd.print("H: ");
   lcd.setCursor(10, 1);
-  lcd.print("\337C");
+  lcd.print("%");
 
   //SD's section
   if (!SD.begin(chipSelect))
@@ -123,7 +124,7 @@ void loop()
   int A0, A1;
   float theta[2] = {0,0};//Every loop we need to empty theta.
   unsigned int sensor0 = 0; //LM35 connected pin A0
-  unsigned int sensor1 = 1; //LM 35 colnnected to pin A1
+  unsigned int sensor1 = 1; //LM35 colnnected to pin A1
   DateTime now, next;
   File myFile; //We are creating again the object myFile of the class File because we did it in the setup function, not in loop.
 
@@ -167,13 +168,15 @@ void loop()
     }
     theta_first[1] = theta_first[1]/9.31/20;
 
+    theta_first[0] = (theta_first[0] + theta_first[1])/2;
+
     D7 = dht.readHumidity();
     Serial.println(D7);
 
     lcd.setCursor(4, 0);
     lcd.print(theta_first[0], 2);
     lcd.setCursor(4, 1);
-    lcd.print(theta_first[1], 2);
+    lcd.print(D7, 2);
   }
 
   else
@@ -312,10 +315,12 @@ void loop()
     Serial.print("  ;  ");
     Serial.println(phi_sum/counter);
 
+    theta_avg = ((theta_sum[0]/counter)+(theta_sum[1]/counter))/2;
+
     lcd.setCursor(4, 0);
-    lcd.print(theta_sum[0]/counter, 2);
+    lcd.print(theta_avg, 2);
     lcd.setCursor(4, 1);
-    lcd.print(theta_sum[1]/counter, 2);
+    lcd.print(phi_sum/counter, 2);
 
     counter += 1;
   }

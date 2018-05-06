@@ -43,7 +43,7 @@ void setup()
   analogReference(INTERNAL);
   Serial.begin(9600); //We are opening the serial communication.
   delay(1000);
-  Serial.println("Serial communication started.");
+  //Serial.println("Serial communication started.");
   Wire.begin();
   RTC.begin();
   File myFile; //We are creating an object called myFile of the class File.
@@ -238,10 +238,10 @@ void loop()
     {
       j += 1;
       now = RTC.now();
-      printdate(now);
-      printdate(next);
-      Serial.println(counter);
-      Serial.println(j);
+      //printdate(now);
+      //printdate(next);
+      //Serial.println(counter);
+      //Serial.println(j);
 
       delay(stop_time*1000);
 

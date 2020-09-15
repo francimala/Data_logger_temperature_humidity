@@ -1,1 +1,0 @@
-Hey there, this is a University project based on Arduino UNO.

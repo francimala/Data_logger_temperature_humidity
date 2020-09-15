@@ -1,0 +1,2 @@
+# Project description
+This repository contains my bachelor degree final project which was developed with professor L. Giaccone at Politecnico di Torino during fall-spring 2018. The goal of the thesis was the design and realization of an indoor temperature and humidity data logger. Arduino UNO was used to write the two sensors measures on a SD card, so that a python script could be used to scan the entire content of the text file and create useful plots showing the behaviour over time of the two quantities.
